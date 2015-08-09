@@ -1,0 +1,60 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<script src="./jquery.hotkey.js"></script>
+</head>
+<body>
+	<h2>KUKU COMIC Viewer</h2>
+	<div>
+		章節: <select id="comicList"></select>
+	</div>
+	<img id="comic"/>
+</body>
+<script>
+	var chURL = "";
+	var page = 0;
+	var comicListArr = [];
+	var getComicListArr = function(){
+		$.get("/comic/getList", function(data){
+			comicListArr = JSON.parse(data);
+			var options = comicListArr.reverse().reduce(function(prevVal,currVal,index,array){
+				if(index == 1){
+					return "<option value='"+prevVal+"'>"+(comicListArr.length)+"</option>" + 
+						   "<option value='"+currVal+"'>"+(comicListArr.length - index)+"</option>";
+				}
+
+				return prevVal + "<option value='"+currVal+"'>"+(comicListArr.length - index)+"</option>";
+			});
+			console.log(options);
+			$("#comicList").html(options).trigger("change");
+		});
+	};
+
+	$("#comicList").change(function(){
+		chURL = $(this).val();
+		page = 1;
+		showComic(chURL, page);
+	});
+
+	var showComic = function(chURL, page){
+		console.log(chURL);
+		$.get("http://localhost:3000/comic/"+encodeURIComponent(chURL)+"/"+page, function(data){
+			console.log(data);
+			if(!data){
+				alert("End!");
+			}
+			$("#comic").attr("src", data);
+		});
+	}
+
+	$(document).bind('keydown', 'a', function(){
+		showComic(chURL, ++page);
+	});
+
+	$(document).bind('keydown', 'q', function(){
+		showComic(chURL, --page);
+	});
+
+	getComicListArr();
+</script>
+</html>
